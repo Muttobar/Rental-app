@@ -2,7 +2,8 @@ package handlers
 
 import (
 	"fmt"
-	"rental-app/backend/models"
+
+	"github.com/Muttobar/Rental-app/backend/models"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

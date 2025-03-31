@@ -3,7 +3,7 @@ package models
 import "time"
 
 type Tenant struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
+	ID        uint      `gorm:"primaryKey" json:"ID"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 }
