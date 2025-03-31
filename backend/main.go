@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
-	"rental-app/backend/handlers"
-	"rental-app/backend/models"
-
+	"github.com/Muttobar/Rental-app/backend/handlers"
+	"github.com/Muttobar/Rental-app/backend/models"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -38,7 +39,14 @@ func main() {
 
 	// Инициализация роутера
 	r := gin.Default()
-
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 	// Роуты для арендаторов
 	r.POST("/tenants", handlers.CreateTenant)
 	r.GET("/tenants", handlers.ListTenants)
@@ -47,4 +55,14 @@ func main() {
 	port := os.Getenv("PORT")
 	fmt.Printf("Server running on :%s\n", port)
 	r.Run(":" + port)
+
+	// Добавьте этот блок конфигурации CORS
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // Разрешить все домены (для разработки)
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 }
