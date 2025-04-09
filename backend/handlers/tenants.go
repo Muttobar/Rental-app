@@ -44,7 +44,7 @@ func ListTenants(c *gin.Context) {
 
 	c.JSON(200, tenants)
 }
-func CalculateRating(tenantID uint) float64 {
+func CalculateRating(tenantID uint) (float64, error) {
 	var payments []models.Payment
 	DB.Where("tenant_id = ? AND paid = ?", tenantID, true).Find(&payments)
 
@@ -57,12 +57,18 @@ func CalculateRating(tenantID uint) float64 {
 
 	var tenant models.Tenant
 	if result := DB.First(&tenant, tenantID); result.Error != nil {
-		return 0.0, result.Error // Добавить обработку ошибки
+		return 0.0, result.Error
 	}
-	leaseDuration := time.Since(tenant.CreatedAt).Hours() / 24 / 30 // Месяцы
+
+	leaseDuration := time.Since(tenant.CreatedAt).Hours() / 24 / 30
+
+	// Исправленный возврат при отсутствии платежей
 	if len(payments) == 0 {
-		return 5.0 // Дефолтный рейтинг
+		return 5.0, nil
 	}
+
 	rating := float64(timelyPayments)/float64(len(payments))*0.7 + (leaseDuration * 0.3)
-	return math.Min(rating, 5.0) // Максимум 5 звезд
+
+	// Исправленный конечный возврат
+	return math.Min(rating, 5.0), nil
 }
