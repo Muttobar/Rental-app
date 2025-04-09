@@ -56,7 +56,9 @@ func CalculateRating(tenantID uint) float64 {
 	}
 
 	var tenant models.Tenant
-	DB.First(&tenant, tenantID)
+	if result := DB.First(&tenant, tenantID); result.Error != nil {
+		return 0.0, result.Error // Добавить обработку ошибки
+	}
 	leaseDuration := time.Since(tenant.CreatedAt).Hours() / 24 / 30 // Месяцы
 	if len(payments) == 0 {
 		return 5.0 // Дефолтный рейтинг
