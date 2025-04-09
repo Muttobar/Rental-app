@@ -17,7 +17,10 @@ import (
 
 func main() {
 	// Загрузка .env файла
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Не удалось загрузить .env файл:", err)
+	}
+	fmt.Println("✅ .env загружен")
 
 	// Подключение к БД
 	dsn := fmt.Sprintf(
@@ -28,26 +31,33 @@ func main() {
 		os.Getenv("POSTGRES_DB"),
 		os.Getenv("POSTGRES_PORT"),
 	)
+	fmt.Println("⌛️ Подключаюсь к БД...")
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("DB connection failed")
+		log.Fatal("❌ Ошибка подключения к БД:", err)
 	}
+	fmt.Println("✅ Успешное подключение к БД")
+
 	handlers.DB = db
 
 	// Автомиграция таблиц
-	if err := db.AutoMigrate(
-		&models.Tenant{},
-		&models.Property{},
-		&models.Payment{},
-		&models.Document{},
-	); err != nil {
-		log.Fatal("Migration failed: ", err)
+	fmt.Println("⌛️ Выполняю миграции...")
+	if err := db.AutoMigrate(&models.Tenant{}, &models.Property{}, &models.Payment{}, &models.Document{}); err != nil {
+		log.Fatal("❌ Ошибка миграции:", err)
+	}
+	fmt.Println("✅ Миграции выполнены")
+	// Инициализация роутера
+	r := gin.Default()
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8082"
+		fmt.Println("⚠️ Использую порт по умолчанию: 8082")
+
+		fmt.Printf("🚀 Сервер запущен на http://192.168.1.39:%s\n", port)
+		r.Run(":" + port)
 
 		// Инициализация роутера
-		r := gin.Default()
-
-		// CORS middleware ДОЛЖЕН БЫТЬ ПЕРЕД ОПРЕДЕЛЕНИЕМ РОУТОВ
 		r.Use(cors.New(cors.Config{
 			AllowOrigins:     []string{"*"},
 			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
@@ -84,6 +94,8 @@ func main() {
 		// Запуск сервера
 		port := os.Getenv("PORT")
 		fmt.Printf("Server running on :%s\n", port)
+		fmt.Printf("\n🚀 Сервер запущен и слушает порт %s\n", port)
+		fmt.Println("Нажмите Ctrl+C для остановки")
 		r.Run(":" + port)
 	}
 }
