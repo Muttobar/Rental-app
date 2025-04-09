@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"math"
+	"time"
 
 	"github.com/Muttobar/Rental-app/backend/models"
-
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -42,4 +43,24 @@ func ListTenants(c *gin.Context) {
 	}
 
 	c.JSON(200, tenants)
+}
+func CalculateRating(tenantID uint) float64 {
+	var payments []models.Payment
+	DB.Where("tenant_id = ? AND paid = ?", tenantID, true).Find(&payments)
+
+	timelyPayments := 0
+	for _, p := range payments {
+		if p.PaidDate.Before(p.DueDate) || p.PaidDate.Equal(p.DueDate) {
+			timelyPayments++
+		}
+	}
+
+	var tenant models.Tenant
+	DB.First(&tenant, tenantID)
+	leaseDuration := time.Since(tenant.CreatedAt).Hours() / 24 / 30 // Месяцы
+	if len(payments) == 0 {
+		return 5.0 // Дефолтный рейтинг
+	}
+	rating := float64(timelyPayments)/float64(len(payments))*0.7 + (leaseDuration * 0.3)
+	return math.Min(rating, 5.0) // Максимум 5 звезд
 }

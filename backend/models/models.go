@@ -6,6 +6,7 @@ type Tenant struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
+	Rating    float64   `gorm:"default:5.0" json:"rating"` // Комментарий ВНЕ тега
 }
 
 type Property struct {
@@ -14,6 +15,7 @@ type Property struct {
 	Size        float64    `json:"size"`
 	Price       float64    `json:"price"`
 	Description string     `json:"description"`
+	TenantID    uint       `json:"tenant_id"` // Добавим связь с арендатором
 	Photos      []Document `json:"photos" gorm:"foreignKey:PropertyID"`
 }
 
@@ -30,7 +32,7 @@ type Payment struct {
 type Document struct {
 	ID         uint   `gorm:"primaryKey" json:"id"`
 	URL        string `json:"url" binding:"required"`
-	Type       string `json:"type"` // contract, photo
+	Type       string `json:"type"`
 	TenantID   uint   `json:"tenant_id"`
 	PropertyID uint   `json:"property_id"`
 }

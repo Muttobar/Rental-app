@@ -5,7 +5,6 @@ import axios from 'axios';
 
 const API_URL = 'http://192.168.1.39:8082';
 
-// Добавьте стили
 const styles = {
   item: {
     padding: 10,
@@ -15,8 +14,8 @@ const styles = {
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
-  },
+    fontWeight: 'bold' as 'bold'
+  }
 };
 
 export default function TenantsScreen() {
@@ -27,17 +26,12 @@ export default function TenantsScreen() {
 
   const fetchTenants = async () => {
     try {
-      console.log('Запрос данных...');
       const response = await axios.get(`${API_URL}/tenants`);
-      console.log('Получены данные:', response.data);
-      
-      // Проверка формата данных
       const validatedData = response.data.map(item => ({
-        id: item.id || item.ID || Date.now(), // Унификация полей
+        id: item.id || item.ID || Date.now(),
         name: item.name,
         created_at: item.created_at,
       }));
-      
       setTenants(validatedData);
     } catch (error) {
       console.error('Ошибка загрузки:', error);
@@ -78,13 +72,17 @@ export default function TenantsScreen() {
         renderItem={({ item }) => (
           <View style={styles.item}>
             <Text style={styles.title}>{item.name}</Text>
-            <Text>ID: {item.id}</Text>
-            <Text>Дата: {new Date(item.created_at).toLocaleDateString()}</Text>
+            <Button
+              title="Платежи"
+              onPress={() => navigation.navigate('Payments', { 
+                tenantId: item.id
+              })}
+            />
           </View>
         )}
         refreshing={refreshing}
         onRefresh={onRefresh}
       />
     </View>
-  );
-}
+  ); // <-- Закрывающая скобка для основного View
+} // <-- Закрывающая скобка для компонента

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -29,40 +30,60 @@ func main() {
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	handlers.DB = db
 	if err != nil {
 		panic("DB connection failed")
 	}
+	handlers.DB = db
 
 	// Автомиграция таблиц
-	db.AutoMigrate(&models.Tenant{}, &models.Property{}, &models.Payment{}, &models.Document{})
+	if err := db.AutoMigrate(
+		&models.Tenant{},
+		&models.Property{},
+		&models.Payment{},
+		&models.Document{},
+	); err != nil {
+		log.Fatal("Migration failed: ", err)
 
-	// Инициализация роутера
-	r := gin.Default()
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
-	// Роуты для арендаторов
-	r.POST("/tenants", handlers.CreateTenant)
-	r.GET("/tenants", handlers.ListTenants)
+		// Инициализация роутера
+		r := gin.Default()
 
-	// Запуск сервера
-	port := os.Getenv("PORT")
-	fmt.Printf("Server running on :%s\n", port)
-	r.Run(":" + port)
+		// CORS middleware ДОЛЖЕН БЫТЬ ПЕРЕД ОПРЕДЕЛЕНИЕМ РОУТОВ
+		r.Use(cors.New(cors.Config{
+			AllowOrigins:     []string{"*"},
+			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+			AllowHeaders:     []string{"Origin", "Content-Type"},
+			ExposeHeaders:    []string{"Content-Length"},
+			AllowCredentials: true,
+			MaxAge:           12 * time.Hour,
+		}))
 
-	// Добавьте этот блок конфигурации CORS
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, // Разрешить все домены (для разработки)
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+		// Роуты
+		r.POST("/tenants", handlers.CreateTenant)
+		r.GET("/tenants", handlers.ListTenants)
+
+		properties := r.Group("/properties")
+		{
+			properties.POST("/", handlers.CreateProperty)
+			properties.GET("/", handlers.ListProperties)
+		}
+
+		payments := r.Group("/payments")
+		{
+			payments.POST("/", handlers.CreatePayment)
+			payments.GET("/:tenantId", handlers.GetPayments)
+		}
+
+		documents := r.Group("/documents")
+		{
+			documents.POST("/", handlers.UploadDocument)
+		}
+
+		// Финансовый отчет
+		r.GET("/report", handlers.GetFinancialReport)
+
+		// Запуск сервера
+		port := os.Getenv("PORT")
+		fmt.Printf("Server running on :%s\n", port)
+		r.Run(":" + port)
+	}
 }
