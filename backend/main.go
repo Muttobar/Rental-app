@@ -40,7 +40,7 @@ func main() {
 	fmt.Println("✅ Успешное подключение к БД")
 
 	handlers.DB = db
-
+	gin.SetMode(gin.ReleaseMode)
 	// Автомиграция таблиц
 	fmt.Println("⌛️ Выполняю миграции...")
 	if err := db.AutoMigrate(&models.Tenant{}, &models.Property{}, &models.Payment{}, &models.Document{}); err != nil {
