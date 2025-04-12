@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/Muttobar/Rental-app/backend/handlers"
 	"github.com/Muttobar/Rental-app/backend/models"
@@ -21,7 +20,7 @@ func main() {
 		log.Fatal("Не удалось загрузить .env файл:", err)
 	}
 	fmt.Println("✅ .env загружен")
-
+	gin.SetMode(gin.ReleaseMode)
 	// Подключение к БД
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s",
@@ -40,62 +39,56 @@ func main() {
 	fmt.Println("✅ Успешное подключение к БД")
 
 	handlers.DB = db
-	gin.SetMode(gin.ReleaseMode)
+
 	// Автомиграция таблиц
 	fmt.Println("⌛️ Выполняю миграции...")
 	if err := db.AutoMigrate(&models.Tenant{}, &models.Property{}, &models.Payment{}, &models.Document{}); err != nil {
 		log.Fatal("❌ Ошибка миграции:", err)
+
+		fmt.Println("✅ Миграции выполнены")
 	}
-	fmt.Println("✅ Миграции выполнены")
 	// Инициализация роутера
 	r := gin.Default()
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8082"
 		fmt.Println("⚠️ Использую порт по умолчанию: 8082")
-
 		fmt.Printf("🚀 Сервер запущен на http://192.168.1.39:%s\n", port)
 		r.Run(":" + port)
-
-		// Инициализация роутера
-		r.Use(cors.New(cors.Config{
-			AllowOrigins:     []string{"*"},
-			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-			AllowHeaders:     []string{"Origin", "Content-Type"},
-			ExposeHeaders:    []string{"Content-Length"},
-			AllowCredentials: true,
-			MaxAge:           12 * time.Hour,
-		}))
-
-		// Роуты
-		r.POST("/tenants", handlers.CreateTenant)
-		r.GET("/tenants", handlers.ListTenants)
-
-		properties := r.Group("/properties")
-		{
-			properties.POST("/", handlers.CreateProperty)
-			properties.GET("/", handlers.ListProperties)
-		}
-
-		payments := r.Group("/payments")
-		{
-			payments.POST("/", handlers.CreatePayment)
-			payments.GET("/:tenantId", handlers.GetPayments)
-		}
-
-		documents := r.Group("/documents")
-		{
-			documents.POST("/", handlers.UploadDocument)
-		}
-
-		// Финансовый отчет
-		r.GET("/report", handlers.GetFinancialReport)
-
-		// Запуск сервера
-		port := os.Getenv("PORT")
-		fmt.Printf("Server running on :%s\n", port)
-		fmt.Printf("\n🚀 Сервер запущен и слушает порт %s\n", port)
-		fmt.Println("Нажмите Ctrl+C для остановки")
-		r.Run(":" + port)
 	}
+	// Инициализация роутера
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
+
+	// Роуты
+	r.POST("/tenants", handlers.CreateTenant)
+	r.GET("/tenants", handlers.ListTenants)
+
+	properties := r.Group("/properties")
+	{
+		properties.POST("/", handlers.CreateProperty)
+		properties.GET("/", handlers.ListProperties)
+	}
+	payments := r.Group("/payments")
+	{
+		payments.POST("/", handlers.CreatePayment)
+		payments.GET("/:tenantId", handlers.GetPayments)
+	}
+	documents := r.Group("/documents")
+	{
+		documents.POST("/", handlers.UploadDocument)
+	}
+	// Финансовый отчет
+	r.GET("/report", handlers.GetFinancialReport)
+	// Запуск сервера
+	port = os.Getenv("PORT")
+	fmt.Printf("Server running on :%s\n", port)
+	fmt.Printf("\n🚀 Сервер запущен и слушает порт %s\n", port)
+	fmt.Println("Нажмите Ctrl+C для остановки")
+	r.Run(":" + port)
 }
