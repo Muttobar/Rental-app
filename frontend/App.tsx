@@ -5,15 +5,17 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { theme } from './src/theme';
 
-// Экран помещений
+// Импорты экранов
 import PropertiesScreen from './src/screens/PropertiesScreen';
 import AddPropertyScreen from './src/screens/AddPropertyScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import PaymentsScreen from './src/screens/PaymentsScreen';
 
 // Типы для навигации
 type RootStackParamList = {
   Properties: undefined;
   AddProperty: undefined;
+  PaymentDetails: { propertyId: number };
 };
 
 type DrawerParamList = {
@@ -21,11 +23,10 @@ type DrawerParamList = {
   Settings: undefined;
 };
 
-// Создание навигаторов
 const Stack = createStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
-// Главный стек приложения
+
 function MainStack() {
   return (
     <Stack.Navigator
@@ -44,11 +45,15 @@ function MainStack() {
         component={AddPropertyScreen}
         options={{ title: 'Добавить помещение' }}
       />
+      <Stack.Screen
+        name="PaymentDetails"
+        component={PaymentsScreen}
+        options={{ title: 'Детали платежей' }}
+      />
     </Stack.Navigator>
   );
 }
 
-// Основной компонент приложения
 export default function App() {
   return (
     <PaperProvider theme={theme}>

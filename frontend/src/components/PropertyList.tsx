@@ -2,25 +2,22 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Card, Title, Paragraph, useTheme } from 'react-native-paper';
 import { format, differenceInDays } from 'date-fns';
+import { theme } from '../theme';
+import { Property } from '../types';
 
-interface Property {
-  id: number;
-  address: string;
-  tenant: {
-    name: string;
-  };
-  nextPaymentDate: string;
+interface Props {
+  properties: Property[];
 }
 
-const PropertyList = ({ properties }: { properties: Property[] }) => {
+const PropertyList = ({ properties }: Props) => {
   const { colors } = useTheme();
 
-  const getStatusColor = (date: string) => {
-    const days = differenceInDays(new Date(date), new Date());
-    if (days > 15) return colors.success;
-    if (days >= 5) return colors.warning;
-    if (days >= 2) return colors.orange;
-    return colors.error;
+  const getStatusColor = (dueDate: string) => {
+    const days = differenceInDays(new Date(dueDate), new Date());
+    if (days > 15) return theme.colors.success;
+    if (days >= 5) return theme.colors.warning;
+    if (days >= 2) return theme.colors.orange;
+    return colors.primary;
   };
 
   return (
@@ -30,7 +27,7 @@ const PropertyList = ({ properties }: { properties: Property[] }) => {
           <Card.Content>
             <Title>{property.address}</Title>
             <Paragraph style={{ color: getStatusColor(property.nextPaymentDate) }}>
-              Арендатор: {property.tenant.name}
+              Арендатор: {property.tenant?.name || "Не указан"}
             </Paragraph>
             <Paragraph>
               Следующий платёж: {format(new Date(property.nextPaymentDate), 'dd.MM.yyyy')}
@@ -43,8 +40,13 @@ const PropertyList = ({ properties }: { properties: Property[] }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 16 },
-  card: { marginBottom: 16, backgroundColor: '#fff' },
+  container: { 
+    padding: 16 
+  },
+  card: { 
+    marginBottom: 16, 
+    backgroundColor: theme.colors.surface 
+  },
 });
 
 export default PropertyList;

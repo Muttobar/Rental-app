@@ -5,6 +5,7 @@ import PropertiesScreen from '../screens/PropertiesScreen';
 import AddPropertyScreen from '../screens/AddPropertyScreen';
 import PaymentsScreen from '../screens/PaymentsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import React from 'react';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();

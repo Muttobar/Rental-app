@@ -7,8 +7,14 @@ import {
   ActivityIndicator 
 } from 'react-native-paper';
 import { createProperty } from '../services/api';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types';
 
-export default function AddPropertyScreen({ navigation }) {
+interface AddPropertyScreenProps {
+  navigation: StackNavigationProp<RootStackParamList, 'AddProperty'>;
+}
+
+export default function AddPropertyScreen({ navigation }: AddPropertyScreenProps) {
   // Состояния
   const [address, setAddress] = useState('');
   const [price, setPrice] = useState('');
@@ -30,7 +36,7 @@ export default function AddPropertyScreen({ navigation }) {
       });
       navigation.goBack();
     } catch (err) {
-      setError('Ошибка сервера: ' + err.message);
+      setError('Ошибка при создании: ' + (err as Error).message);
     } finally {
       setLoading(false);
     }

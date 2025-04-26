@@ -1,3 +1,32 @@
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
+
+
+export type PropertiesScreenNavigationProp = StackNavigationProp<
+  RootStackParamList, 
+  'Properties'
+>;
+
+export type PaymentDetailsRouteProp = RouteProp<
+  RootStackParamList, 
+  'PaymentDetails'
+>;
+
+export interface Property {
+  id: number;
+  address: string;
+  nextPaymentDate: string;
+  tenant?: {
+    name: string;
+  };
+}
+
+export type RootStackParamList = {
+  Properties: undefined;
+  AddProperty: undefined;
+  PaymentDetails: { propertyId: number };
+};
+
 export type StackParamList = {
     Properties: undefined;
     AddProperty: undefined;
@@ -8,11 +37,6 @@ export type StackParamList = {
     Main: undefined;
     Settings: undefined;
   };
-  export type RootStackParamList = {
-    Properties: undefined;
-    AddProperty: undefined;
-    Payments: { propertyId: string };
-    PaymentDetails: { propertyId: number };
-};
+  
 
   

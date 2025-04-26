@@ -3,8 +3,14 @@ import { View, StyleSheet } from 'react-native';
 import { ActivityIndicator, Title } from 'react-native-paper';
 import PaymentChart from '../components/PaymentChart';
 import { fetchPaymentHistory } from '../services/api';
+import { RouteProp } from '@react-navigation/core';
+import { RootStackParamList } from '../types';
 
-export default function PaymentDetailsScreen({ route }) {
+interface PaymentDetailsScreenProps {
+  route: RouteProp<RootStackParamList, 'PaymentDetails'>;
+}
+
+export default function PaymentDetailsScreen({ route }: PaymentDetailsScreenProps) {
   const { propertyId } = route.params;
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -1,27 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import { Button, ActivityIndicator } from 'react-native-paper';
-import PropertyCard from '../components/PropertyCard';
+import { useNavigation } from '@react-navigation/native';
+import PropertyList from '../components/PropertyList';
 import { fetchProperties } from '../services/api';
+import { RootStackParamList } from '../types';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { Property } from '../types';
 
-export default function PropertiesScreen({ navigation }) {
-  const [properties, setProperties] = useState([]);
+
+export default function PropertiesScreen() {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList, 'Properties'>>();
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await fetchProperties();
+        setProperties(data);
+      } catch (err) {
+        setError('Ошибка загрузки данных');
+      } finally {
+        setLoading(false);
+      }
+    };
     loadData();
   }, []);
 
-  const loadData = async () => {
-    try {
-      const data = await fetchProperties();
-      setProperties(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.error}>{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -29,13 +43,7 @@ export default function PropertiesScreen({ navigation }) {
         <ActivityIndicator animating={true} size="large" />
       ) : (
         <>
-          {properties.map((property) => (
-            <PropertyCard 
-              key={property.id}
-              property={property}
-              onPress={() => navigation.navigate('PaymentDetails', { propertyId: property.id })}
-            />
-          ))}
+          <PropertyList properties={properties} />
           <Button
             mode="contained"
             icon="plus"
@@ -58,4 +66,9 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
   },
+  error: {
+    color: 'red',
+    textAlign: 'center',
+    fontSize: 16,
+  }
 });

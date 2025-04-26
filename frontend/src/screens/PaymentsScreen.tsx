@@ -6,7 +6,7 @@ import PaymentChart from '../components/PaymentChart';
 import { fetchPaymentHistory } from '../services/api';
 import { theme } from '../theme';
 import { format, parseISO } from 'date-fns';
-import { ru } from 'date-fns/locale';
+import  ru  from 'date-fns/locale/ru';
 
 interface Payment {
   id: number;

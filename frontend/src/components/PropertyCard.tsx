@@ -2,8 +2,14 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Card, Title, Paragraph } from 'react-native-paper';
 import { format, differenceInDays } from 'date-fns';
+import { Property } from '../types';
 
-export default function PropertyCard({ property, onPress }) {
+interface Props {
+  property: Property;
+  onPress: () => void;
+}
+
+const PropertyCard: React.FC<Props> = ({ property, onPress }) => {
   const getStatusColor = () => {
     const days = differenceInDays(new Date(property.nextPaymentDate), new Date());
     if (days > 15) return '#4CAF50';
